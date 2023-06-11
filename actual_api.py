@@ -1,4 +1,5 @@
 import requests
+import json
 from typing import Dict, Optional
 
 
@@ -49,7 +50,7 @@ class ActualAPI:
         self.open = True
 
     def closeRemote(self) -> None:
-        reponse = requests.post(url=f"{self.api_endpoint}/close")
+        response = requests.post(url=f"{self.api_endpoint}/close")
         if response.status_code != 200:
             raise Exception("Failed to close Actual Budget API on backend")
         self.open = False
@@ -57,7 +58,9 @@ class ActualAPI:
     def get_accounts(self):
         assert self.open
         response = requests.get(url=f"{self.api_endpoint}/accounts")
+        if response.status_code == 412:
+            raise Exception("Remote is uninitialized.")
         if response.status_code != 200:
-            raise Exception("Failed to get accounts")
-        return response.content
+            raise Exception("Failed to get accounts.")
+        return json.loads(response.content.decode('utf-8'))
 
